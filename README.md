@@ -1,5 +1,5 @@
 public
 ======
 
-public repository
+Public Repository.
 This is still in progress...
