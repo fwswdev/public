@@ -1,0 +1,9 @@
+// AT Command| Get Response (bool)| Delay| Comment
+// Example:
+// AT|TRUE|1000|Send AT then delay for 1 sec then get data
+// AT|FALSE| 1000|Send AT then delay for 1 sec 
+
+?|TRUE|500|None
+i|TRUE|200|None
+
+
