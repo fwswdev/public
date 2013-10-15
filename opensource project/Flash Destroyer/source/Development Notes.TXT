@@ -1,0 +1,4 @@
+Development  Notes by: Jeff
+
+- Use Eclipse for the code and use its auto-formatting to have a uniform code formatting.
+- Minimize the use of #if 0. Winmerge is confused if there is an #if 0. Instead, block comment the unused code.
