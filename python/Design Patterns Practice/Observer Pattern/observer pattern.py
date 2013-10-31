@@ -18,6 +18,10 @@ class IObservable:
     def addObserver(self,observer): pass
 
 
+    @abc.abstractmethod
+    def deleteObserver(self,observer): pass
+
+
 class IObserver:
     __metaclass__ = abc.ABCMeta
 
@@ -32,12 +36,23 @@ class HumanInput(IObservable):
     __observerlst=[]
 
     def notify(self,data):
-        for x in self.__observerlst:
-            x.update(data)
+        if(len(self.__observerlst)!=0):
+            for x in self.__observerlst:
+                x.update(data)
+        else: print "list is empty"
 
     def addObserver(self,observer):
         self.__observerlst.append(observer)
-        pass
+
+
+    def deleteObserver(self,observer):
+        if(observer in self.__observerlst):
+            self.__observerlst.remove(observer)
+            print "observer deleted"
+        else:
+            print "observer not in list"
+
+
 
 class LcdDisplay(IObserver):
     __name=None
@@ -60,10 +75,25 @@ if(__name__=='__main__'):
         disp2=LcdDisplay('Novatech')
 
         h=HumanInput()
+
+        # two subscribers
         h.addObserver(disp1)
         h.addObserver(disp2)
 
+        # notify them
         h.notify(1)
 
+        # delete one subscriber
+        h.deleteObserver(disp1)
 
+        #notify subscriber
+        h.notify(2)
 
+        # delete one subscriber
+        h.deleteObserver(disp1)
+
+        # delete one subscriber
+        h.deleteObserver(disp2)
+
+        #notify subscriber
+        h.notify(3)
