@@ -1,6 +1,6 @@
 """
 This is an exercise for implementing Strategy Pattern on Python.
-There are not interfaces on python, so we use the abstract base class.
+There are no interfaces on python, so we use the abstract base class.
 """
 
 import abc
