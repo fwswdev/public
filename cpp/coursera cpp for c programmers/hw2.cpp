@@ -1,17 +1,20 @@
 // Started: 11/3/2013  13:35 PM
 // Finished:
+// Note: There are some #ifdef's because I am using Microsoft Visual Studio C++
+//      When cross compiled with Mingw, the #define USE_MSVC_COMPILER must be set to 0
+//      and the stdafx.h must be commented
 
-#include "stdafx.h"
+//#include "stdafx.h"
 
-#define USE_MSVC_COMPILER	1 // set to 0 if not using Microsoft Visual Studio
+#define USE_MSVC_COMPILER	0 // set to 0 if not using Microsoft Visual Studio
 #define USE_TEST_CASES		0
 #if USE_MSVC_COMPILER
-#include "stdafx.h"
 
 // This is for memory leak detection //
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
 #include <crtdbg.h>
+
 #endif
 
 #include <iostream>
@@ -123,7 +126,7 @@ public:
         {
         if (mNode[x].nodesConnected[ctr] == y)
             {
-            mNode[x].nodesConnected[ctr] = INVALID_NODE; // TODO: remove the element from the vector
+            mNode[x].nodesConnected[ctr] = INVALID_NODE; // For enhancement: remove the element from the vector
             }
         }
     return false;
@@ -147,6 +150,12 @@ public:
 //    path(u, w): find shortest path between u-w and returns the sequence of vertices representing shorest path u-v1-v2-…-vn-w.
 //    path_size(u, w): return the path cost associated with the shortest path.
 
+typedef struct
+{
+    list<NodeIdxT> lstNodeIdx;
+    NodeValT distance;
+} PathAndDistanceT;
+
 class ShortestPath
 {
 private:
@@ -158,11 +167,16 @@ public:
     mGraph = g;
     }
 
-    list<NodeIdxT> GetPath(void)
+    // TODO: this is the only missing part... will do this tomorrow :)
+    PathAndDistanceT GetPath(NodeIdxT start, NodeIdxT end)
     {
-    list<NodeIdxT> path;
+    const NodeT * nodes = mGraph->GetNodes();
+    PathAndDistanceT p;
+    p.distance = 0;
 
-    return path;
+    list<PathAndDistanceT> path;
+
+    return p;
     }
 
     NodeValT GetPathCost(void)
@@ -171,24 +185,6 @@ public:
     }
 
 };
-
-int TestCases(void)
-{
-Graph g;
-int sz;
-sz = g.GetNumVertices(g);
-bool m = g.mCheckIfXYConnected(g, 1, 2);
-g.AddXY(g, 1, 2);
-m = g.mCheckIfXYConnected(g, 1, 2);
-
-// Shortest Path Algo
-const NodeT * nodePtr;
-nodePtr = g.GetNodes();
-ShortestPath sp(&g);
-int distance = g.GetDistanceDirect(g, 0, 2);
-
-return 0;
-}
 
 const int STARTING_POINT_IDX = 0;
 const int ENDING_POINT_IDX = NUM_NODES - 1;
@@ -204,14 +200,16 @@ Graph g;
 //    g.AddXY(g, STARTING_POINT_IDX, ctr);
 //    }
 
+// Create a simple graph first
 g.AddXY(g, STARTING_POINT_IDX, 3);
 g.AddXY(g, 3, 49);
 
 // Shortest Path Algo
-const NodeT * nodePtr;
-nodePtr = g.GetNodes();
+//const NodeT * nodePtr;
+//nodePtr = g.GetNodes();
 ShortestPath sp(&g);
 int distance = g.GetDistanceDirect(g, 0, 49);
+PathAndDistanceT pathList = sp.GetPath(STARTING_POINT_IDX, ENDING_POINT_IDX);
 
 return 0;
 }
@@ -223,26 +221,26 @@ return 0;
 #if USE_MSVC_COMPILER
 
 int _tmain(int argc, _TCHAR* argv[])
-{
+    {
 #if USE_TEST_CASES
-TestCases();
+    TestCases();
 #else
-AppMain();
+    AppMain();
 #endif
-_CrtDumpMemoryLeaks();
-return 0;
-}
+    _CrtDumpMemoryLeaks();
+    return 0;
+    }
 
 #else
 
 int main(void)
-    {
+{
 #if USE_TEST_CASES
-    return TestCases();
+return TestCases();
 #else
-    return AppMain();
+return AppMain();
 #endif
-    }
+}
 
 #endif
 
@@ -263,3 +261,22 @@ int main(void)
 //
 //	return 0;
 //}
+
+//int TestCases(void)
+//{
+//Graph g;
+//int sz;
+//sz = g.GetNumVertices(g);
+//bool m = g.mCheckIfXYConnected(g, 1, 2);
+//g.AddXY(g, 1, 2);
+//m = g.mCheckIfXYConnected(g, 1, 2);
+//
+//// Shortest Path Algo
+//const NodeT * nodePtr;
+//nodePtr = g.GetNodes();
+//ShortestPath sp(&g);
+//int distance = g.GetDistanceDirect(g, 0, 2);
+//
+//return 0;
+//}
+
