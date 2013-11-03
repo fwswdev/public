@@ -6,8 +6,8 @@
 
 //#include "stdafx.h"
 
-#define USE_MSVC_COMPILER	0 // set to 0 if not using Microsoft Visual Studio
-#define USE_TEST_CASES		0
+#define USE_MSVC_COMPILER       0 // set to 0 if not using Microsoft Visual Studio
+#define USE_TEST_CASES          0
 #if USE_MSVC_COMPILER
 
 // This is for memory leak detection //
@@ -31,6 +31,7 @@ typedef int NodeIdxT;
 typedef int NodeValT;
 
 static const NodeValT INVALID_NODE = -1;
+static const NodeValT MAX_INVALID_NODE = 1000;
 static const int NUM_NODES = 50;
 
 // No methods here to emulate struct
@@ -159,29 +160,54 @@ typedef struct
 class ShortestPath
 {
 private:
-    Graph *mGraph;
+    Graph *mPtrGraph;
+    list<NodeIdxT> *mPtrLstNodeIdx;
+    NodeValT mDistance;
+    vector<PathAndDistanceT> mPath;
 
 public:
     ShortestPath(Graph *g)
     {
-    mGraph = g;
+    mPtrGraph = g;
     }
 
     // TODO: this is the only missing part... will do this tomorrow :)
-    PathAndDistanceT GetPath(NodeIdxT start, NodeIdxT end)
+    void PerformPathFinding(NodeIdxT start, NodeIdxT end)
     {
-    const NodeT * nodes = mGraph->GetNodes();
-    PathAndDistanceT p;
-    p.distance = 0;
+    const NodeT * nodes = mPtrGraph->GetNodes();
+    NodeValT currdist, mindist;
+    NodeIdxT currentNode = start;
 
-    list<PathAndDistanceT> path;
+    mPath.clear();
 
-    return p;
+    while (true)
+        {
+        mindist = MAX_INVALID_NODE;
+        int nodeConnectedSize = nodes[currentNode].nodesConnected.size();
+        for (int ctr = 0; ctr < nodeConnectedSize; ctr++)
+            {
+            currdist = mPtrGraph->GetDistanceDirect(*mPtrGraph, currentNode,
+                    nodes[currentNode].nodesConnected[ctr]);
+            if (currdist != INVALID_NODE)
+                {
+                mindist = currdist;
+                }
+            }
+
+        break;
+        }
+
+    this->mDistance = mindist;
     }
 
-    NodeValT GetPathCost(void)
+    list<NodeIdxT> * GetNodes(void)
     {
-    return 0;
+    return mPtrLstNodeIdx;
+    }
+
+    NodeValT GetDistance(void)
+    {
+    return mDistance;
     }
 
 };
@@ -208,9 +234,13 @@ g.AddXY(g, 3, 49);
 //const NodeT * nodePtr;
 //nodePtr = g.GetNodes();
 ShortestPath sp(&g);
-int distance = g.GetDistanceDirect(g, 0, 49);
-PathAndDistanceT pathList = sp.GetPath(STARTING_POINT_IDX, ENDING_POINT_IDX);
+int distance;
+//distance=g.GetDistanceDirect(g, 0, 49);
 
+sp.PerformPathFinding(STARTING_POINT_IDX, ENDING_POINT_IDX);
+
+list<NodeIdxT> * myNodes = sp.GetNodes();
+distance = sp.GetDistance();
 return 0;
 }
 
@@ -221,26 +251,26 @@ return 0;
 #if USE_MSVC_COMPILER
 
 int _tmain(int argc, _TCHAR* argv[])
-    {
+{
 #if USE_TEST_CASES
-    TestCases();
+TestCases();
 #else
-    AppMain();
+AppMain();
 #endif
-    _CrtDumpMemoryLeaks();
-    return 0;
-    }
+_CrtDumpMemoryLeaks();
+return 0;
+}
 
 #else
 
 int main(void)
-{
+    {
 #if USE_TEST_CASES
-return TestCases();
+    return TestCases();
 #else
-return AppMain();
+    return AppMain();
 #endif
-}
+    }
 
 #endif
 
