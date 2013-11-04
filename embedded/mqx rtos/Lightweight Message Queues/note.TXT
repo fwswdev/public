@@ -1,0 +1,3 @@
+This code was tested with TWRK60D100M.
+Printf output was redirected to the
+debug output console of Codewarrior.
