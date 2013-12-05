@@ -74,8 +74,17 @@ reuse TI's license.
 #include "hal_pmm.h"
 #include "rfOps.h"
 
+typedef struct
+	{
+		unsigned Transmitting :1;
+		unsigned Receiving :1;
+		unsigned PacketReceived :1;
+	} RfBooleanFlagsT;
+
 
 static volatile RfBooleanFlagsT mRfBoolFlags; // must be initialized before infinite while loop
+
+
 
 
 void RfOps_InitFlags(void)
@@ -88,6 +97,8 @@ mRfBoolFlags.Receiving = FALSE;
 
 void RfOps_InitRadio(RF_SETTINGS *pRfSettings,unsigned char *patablearray, unsigned char patablesize)
 {
+RfOps_InitFlags();
+
 // Set the High-Power Mode Request Enable bit so LPM3 can be entered
 // with active radio enabled
 PMMCTL0_H = 0xA5;
@@ -132,6 +143,8 @@ mRfBoolFlags.Receiving = FALSE;
 
 
 
+
+
 void RfOps_Transmit(unsigned char *buffer, unsigned char length)
 {
 RF1AIES |= BIT9;
@@ -146,20 +159,31 @@ mRfBoolFlags.Transmitting = TRUE;
 
 
 
+
+
 unsigned char RfOps_HasPacketReceived(void)
 {
 return mRfBoolFlags.PacketReceived;
 }
+
+
+
 
 void RfOps_ClearPacketReceivedFlag(void)
 {
 mRfBoolFlags.PacketReceived=FALSE;
 }
 
+
+
+
 unsigned char RfOps_IsTransmitting(void)
 {
 return mRfBoolFlags.Transmitting;
 }
+
+
+
 
 
 #pragma vector=CC1101_VECTOR

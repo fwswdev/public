@@ -18,12 +18,6 @@ V1.0  Initial Version
 #define TRUE	1
 #define FALSE	0
 
-typedef struct
-	{
-		unsigned Transmitting :1;
-		unsigned Receiving :1;
-		unsigned PacketReceived :1;
-	} RfBooleanFlagsT;
 
 
 void RfOps_InitFlags(void);
@@ -36,4 +30,4 @@ unsigned char RfOps_HasPacketReceived(void);
 void RfOps_ClearPacketReceivedFlag(void);
 unsigned char RfOps_IsTransmitting(void);
 
-#endif /* __PMM */
+#endif

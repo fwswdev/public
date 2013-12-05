@@ -29,8 +29,8 @@
  * Revision:
  * 	sevenstring
  * 		- minor enhancements (15/5/2013)
- * 		- This version is still hard for reuse. If will release another version
- * 		for easy code reuse.
+ * 		- This version was created for easy code reuse.
+ * 		- This version is Not yet fully tested.
  ******************************************************************************/
 
 #include "RF_Toggle_LED_Demo.h"
@@ -63,17 +63,8 @@ const unsigned char TxBuffer[6] =
 unsigned char buttonPressed = FALSE;
 unsigned int i = 0;
 
-//unsigned char transmitting = 0;
-//unsigned char receiving = 0;
 
-//typedef struct
-//	{
-//		unsigned Transmitting :1;
-//		unsigned Receiving :1;
-//		unsigned PacketReceived :1;
-//	} RfBooleanFlagsT;
 
-//static volatile RfBooleanFlagsT mRfBoolFlags; // must be initialized before infinite while loop
 
 void main(void)
 {
@@ -82,18 +73,10 @@ WDTCTL = WDTPW + WDTHOLD;
 
 // Increase PMMCOREV level to 2 for proper radio operation
 SetVCore(2);
-
-
 ResetRadioCore();
-RfOps_InitFlags();
 RfOps_InitRadio(&rfSettings,(unsigned char*)PATABLE_ARR,PATABLE_ARRAY_SZ);
 InitButtonLeds();
-
 RfOps_ReceiveOn();
-
-//mRfBoolFlags.PacketReceived = FALSE;
-//mRfBoolFlags.Transmitting = FALSE;
-//mRfBoolFlags.Receiving = TRUE;
 
 while (1)
 	{
@@ -107,18 +90,14 @@ while (1)
 		P1IFG = 0;
 
 		RfOps_ReceiveOff();
-//		mRfBoolFlags.Receiving = FALSE;
 		RfOps_Transmit((unsigned char*) TxBuffer, sizeof TxBuffer);
-//		mRfBoolFlags.Transmitting = TRUE;
 
 		P1IE |= BIT7;                         // Re-enable button press
 		}
 	else if (!RfOps_IsTransmitting())
 		{
 		RfOps_ReceiveOn();
-//		mRfBoolFlags.Receiving = TRUE;
 		}
-
 
 	// TODO: this needs to be improved
 	if (RfOps_HasPacketReceived())
@@ -134,7 +113,6 @@ while (1)
 		if (RxBuffer[CRC_LQI_IDX] & CRC_OK)
 			P1OUT ^= BIT0;                    // Toggle LED1
 
-//		mRfBoolFlags.PacketReceived = FALSE;
 		RfOps_ClearPacketReceivedFlag();
 		}
 
@@ -161,129 +139,6 @@ P1DIR |= BIT0;
 P3OUT &= ~BIT6;
 P3DIR |= BIT6;
 }
-
-//void InitRadio(void)
-//{
-//// Set the High-Power Mode Request Enable bit so LPM3 can be entered
-//// with active radio enabled
-//PMMCTL0_H = 0xA5;
-//PMMCTL0_L |= PMMHPMRE_L;
-//PMMCTL0_H = 0x00;
-//
-//WriteRfSettings(&rfSettings);
-//
-//WriteSinglePATable(PATABLE_VAL);
-//}
-
-//void Transmit(unsigned char *buffer, unsigned char length)
-//{
-//RF1AIES |= BIT9;
-//RF1AIFG &= ~BIT9;                         // Clear pending interrupts
-//RF1AIE |= BIT9;                           // Enable TX end-of-packet interrupt
-//
-//WriteBurstReg(RF_TXFIFOWR, buffer, length);
-//
-//Strobe(RF_STX);                         // Strobe STX
-//}
-
-//void ReceiveOn(void)
-//{
-//RF1AIES |= BIT9;                          // Falling edge of RFIFG9
-//RF1AIFG &= ~BIT9;                         // Clear a pending interrupt
-//RF1AIE |= BIT9;                          // Enable the interrupt
-//
-//// Radio is in IDLE following a TX, so strobe SRX to enter Receive Mode
-//Strobe(RF_SRX);
-//}
-
-//void ReceiveOff(void)
-//{
-//RF1AIE &= ~BIT9;                          // Disable RX interrupts
-//RF1AIFG &= ~BIT9;                         // Clear pending IFG
-//
-//// It is possible that ReceiveOff is called while radio is receiving a packet.
-//// Therefore, it is necessary to flush the RX FIFO after issuing IDLE strobe
-//// such that the RXFIFO is empty prior to receiving a packet.
-//Strobe(RF_SIDLE);
-//Strobe(RF_SFRX);
-//}
-
-
-#if 0
-#pragma vector=CC1101_VECTOR
-__interrupt void CC1101_ISR(void)
-{
-switch (__even_in_range(RF1AIV, 32))
-	// Prioritizing Radio Core Interrupt
-	{
-	case 0:
-		break; // No RF core interrupt pending
-	case 2:
-		break;                         // RFIFG0
-	case 4:
-		break;                         // RFIFG1
-	case 6:
-		break;                         // RFIFG2
-	case 8:
-		break;                         // RFIFG3
-	case 10:
-		break;                         // RFIFG4
-	case 12:
-		break;                         // RFIFG5
-	case 14:
-		break;                         // RFIFG6
-	case 16:
-		break;                         // RFIFG7
-	case 18:
-		break;                         // RFIFG8
-	case 20:                                // RFIFG9
-		if (mRfBoolFlags.Receiving)			    // RX end of packet
-			{
-			mRfBoolFlags.PacketReceived = TRUE;
-
-#if 0
-// NOTE: (sevenstring) This block must be moved outside out interrupt routine
-// This cause problems to other developers including me.
-
-			// Read the length byte from the FIFO
-			RxBufferLength = ReadSingleReg( RXBYTES );
-			ReadBurstReg(RF_RXFIFORD, RxBuffer, RxBufferLength);
-
-			// Stop here to see contents of RxBuffer
-			__no_operation();
-
-			// Check the CRC results
-			if(RxBuffer[CRC_LQI_IDX] & CRC_OK)
-			P1OUT ^= BIT0;// Toggle LED1
-#endif
-
-			}
-		else if (mRfBoolFlags.Transmitting)		    // TX end of packet
-			{
-			RF1AIE &= ~BIT9;               // Disable TX end-of-packet interrupt
-			P3OUT &= ~BIT6;        // Turn off LED after Transmit
-			mRfBoolFlags.Transmitting = FALSE;
-			}
-		else
-			while (1)
-				; 			    // trap
-		break;
-	case 22:
-		break;                         // RFIFG10
-	case 24:
-		break;                         // RFIFG11
-	case 26:
-		break;                         // RFIFG12
-	case 28:
-		break;                         // RFIFG13
-	case 30:
-		break;                         // RFIFG14
-	case 32:
-		break;                         // RFIFG15
-	}
-__bic_SR_register_on_exit(LPM3_bits);
-}
-#endif
 
 
 #pragma vector=PORT1_VECTOR
@@ -314,3 +169,5 @@ switch (__even_in_range(P1IV, 16))
 		break;
 	}
 }
+
+
