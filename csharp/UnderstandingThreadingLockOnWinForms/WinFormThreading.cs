@@ -14,7 +14,7 @@ namespace ThreadGui
     public partial class Form1 : Form
     {
         public Form1()
-        {
+        { 
             InitializeComponent();
         }
 
@@ -23,10 +23,10 @@ namespace ThreadGui
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
-            //LockingUsingVolatileVariable();
+            LockingUsingVolatileVariable();
             //LockingUsingDotNetLock();
             //LockingUsingDotNetLockOnAnotherThread();
-            LockingUsingTryMonitorOnAnotherThread();
+            //LockingUsingTryMonitorOnAnotherThread();
         }
 
 
@@ -46,8 +46,6 @@ namespace ThreadGui
         // Display incrementing numbers on TextBox
         private void DisplayTextOnTextBox()
         {
-            uithreadinprocess = true;
-
             InvokeDelegate d = delegate()
                 {        
                     textBox1.AppendText(string.Format("Display {0}\r\n", ctr));
@@ -84,6 +82,7 @@ namespace ThreadGui
         {
             if (uithreadinprocess == false)
             {
+                uithreadinprocess = true;
                 DisplayTextOnTextBox();
                 uithreadinprocess = false;
             }
