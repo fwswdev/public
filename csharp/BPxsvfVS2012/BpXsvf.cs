@@ -86,10 +86,14 @@ namespace BPXsvf
 
         public override void DoProcess(BpXsvfParameterData p)
         {
-            IOutDisplay ioutdisp = mIoutdisplay;
-            BpXsvfParameterData paramdata = p;
+            var ioutdisp = mIoutdisplay;
+            var paramdata = p;
             SerialPort serialport;
-            string filePath=paramdata.XsvfFilePath;
+            var filePath=paramdata.XsvfFilePath;
+
+            const int BUFF_SZ = 256;
+
+            int res = 0;
 
             byte[] byteRead = null;
 
@@ -128,6 +132,8 @@ namespace BPXsvf
 
 		        SerialPortDelegateWriteOneByte serPortWriteByteDelegate = delegate(byte data)
                     {
+                        serialport.DiscardInBuffer();
+                        serialport.DiscardOutBuffer();
                         serialport.Write(new byte[] { data }, 0, 1);
                     };
 
@@ -139,7 +145,30 @@ namespace BPXsvf
                     Thread.Sleep(100);
                 }
 
-                // ChainScan TODO
+                 //ChainScan TODO
+                if (paramdata.ChainScan)
+                {
+                    var chainreadbuffer = new byte[BUFF_SZ];
+                    ioutdisp.Display("Chain Scan");
+                    serPortWriteByteDelegate(AbstractBpXsvf.JTAG_CHAIN_SCAN);
+                    res = serialport.Read(chainreadbuffer, 0, BUFF_SZ);
+                    if (res != 0)
+                    {
+                        ioutdisp.Display("Got Reply");
+                        for (int ctr = 0; ctr < res; ctr++)
+                        {
+                            ioutdisp.Display(String.Format("{0:d}", chainreadbuffer[ctr]));
+                        }
+
+                    }
+                    else
+                    {
+                        ioutdisp.Display("No Reply");
+                    }
+                    Thread.Sleep(100);
+                }
+
+                //return;
 
                 // XSVF Process
                 ioutdisp.Display("Entering XSVF player mode");
@@ -147,10 +176,10 @@ namespace BPXsvf
 
                 Thread.Sleep(100);
 
-                const int BUFF_SZ=50;
+                
 
                 byte [] readbuffer=new byte[BUFF_SZ + 50];
-                int res=0;
+                
 
                 int fileSize=byteRead.Length;
                 int readSize=BUFF_SZ;
@@ -189,7 +218,10 @@ namespace BPXsvf
                             tempSend[0] = (byte)(readSize >> 8);
                             tempSend[1] = (byte)(readSize);
                             cnt += readSize;
-                            ioutdisp.Display(String.Format("Sending {0:d} Bytes {1:x04}", readSize, cnt));
+                            //ioutdisp.Display(String.Format("Sending {0:d} Bytes {1:x04}", readSize, cnt));
+                            ioutdisp.Display(String.Format("Sending {0:d} Bytes {1:d}", readSize, cnt));
+
+                            Thread.Sleep(5);
                             serialport.DiscardInBuffer();
                             serialport.Write(tempSend, 0, 2);
                             serialport.Write(byteRead, bytePointer, readSize);
