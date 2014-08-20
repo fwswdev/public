@@ -1,9 +1,12 @@
-﻿using System;
+﻿//https://github.com/jevinskie/bus-pirate/blob/master/scripts/BPXSVFPlayer/main.c
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.IO.Ports;
+using System.IO;
 
 namespace BPXsvf
 {
@@ -44,8 +47,8 @@ namespace BPXsvf
 
 
         //protected SerialPort mSerial;
-        IOutDisplay mIoutdisplay;
-        protected BpXsvfParameterData mParamData;
+        protected IOutDisplay mIoutdisplay;
+        //protected BpXsvfParameterData mParamData;
 
         //public void SetSerialPort(SerialPort s)
         //{
@@ -64,13 +67,13 @@ namespace BPXsvf
         }
 
 
-        public void SetBpXsvfParameterData(BpXsvfParameterData paramData)
-        {
-            mParamData = paramData;
+        //public void SetBpXsvfParameterData(BpXsvfParameterData paramData)
+        //{
+        //    mParamData = paramData;
 
-        }
+        //}
 
-        public abstract void DoProcess();
+        public abstract void DoProcess(BpXsvfParameterData p);
 
     }
 
@@ -79,14 +82,132 @@ namespace BPXsvf
 
     public class BpXsvfFork:AbstractBpXsvf
     {
+        delegate void SerialPortDelegateWriteOneByte(byte data);
 
-        public override void DoProcess()
+        public override void DoProcess(BpXsvfParameterData p)
         {
-            BpXsvfParameterData paramdata = mParamData;
-            SerialPort serialport = new SerialPort(paramdata.ComName,paramdata.ComBaudRate,Parity.None,8,StopBits.One);
+            IOutDisplay ioutdisp = mIoutdisplay;
+            BpXsvfParameterData paramdata = p;
+            SerialPort serialport;
+            string filePath=paramdata.XsvfFilePath;
 
-            
+            byte[] byteRead = null;
 
+            if(String.IsNullOrEmpty(filePath)==false)
+            {
+                filePath=filePath.Trim();
+                if(File.Exists(filePath)== true )
+                {
+                    // File process
+                    byteRead = File.ReadAllBytes(filePath);
+                    ioutdisp.Display("Number of bytes: " + byteRead.Length);
+                }
+                else
+                {
+                    return;
+                }
+            }
+            else
+            {
+                return;
+
+            }
+
+            ioutdisp.Display("Opening COM");
+            serialport = new SerialPort(paramdata.ComName, paramdata.ComBaudRate, Parity.None, 8, StopBits.One);
+
+
+            try 
+	        {
+                serialport.ReadTimeout = 500;
+
+                if (serialport.IsOpen == false)
+                    serialport.Open();
+
+		        SerialPortDelegateWriteOneByte serPortWriteByteDelegate = delegate(byte data)
+                    {
+                        serialport.Write(new byte[] { data }, 0, 1);
+                    };
+
+
+                if(paramdata.ResetJtag)
+                {
+                    ioutdisp.Display("Reset");
+                    serPortWriteByteDelegate(AbstractBpXsvf.JTAG_RESET);
+                    Thread.Sleep(10);
+                }
+
+                // ChainScan TODO
+
+                // XSVF Process
+                ioutdisp.Display("Entering XSVF player mode");
+                serPortWriteByteDelegate(AbstractBpXsvf.XSVF_PLAYER);
+
+                const int BUFF_SZ=4096;
+
+                byte [] readbuffer=new byte[BUFF_SZ + 50];
+                int res;
+
+                int fileSize=byteRead.Length;
+                int readSize=BUFF_SZ;
+                int bytePointer=0;
+                int cnt = 0;
+
+                while(true)
+                {
+                    res=serialport.Read(readbuffer, 0, BUFF_SZ);
+                    
+                    if(res>0)
+                    {
+                        if(readbuffer[0]!=AbstractBpXsvf.XSVF_READY_FOR_DATA)
+                        {
+                            ioutdisp.Display("Error! Code: " + (int)readbuffer[0]);
+                        }
+                        else
+                        {
+                            if (fileSize == 0)
+                                break;
+
+                            if(fileSize < BUFF_SZ)
+                            {
+                                readSize = fileSize;
+                            }
+
+                            byte[] tempSend = new byte[2];
+                            tempSend[0] = (byte)(readSize >> 8);
+                            tempSend[1] = (byte)(readSize);
+                            cnt += readSize;
+                            ioutdisp.Display(String.Format("Sending {0:d} Bytes {1:x04}", readSize, cnt));
+                            serialport.Write(tempSend, 0, 2);
+                            serialport.Write(byteRead, bytePointer, readSize);
+
+                            bytePointer += readSize;
+                            fileSize -= readSize;
+
+                        }
+
+
+
+
+                    }
+                    else
+                    {
+                        break;
+                    }
+
+                }
+                ioutdisp.Display(" Thank you for playing!");
+
+
+	        }
+	        finally
+	        {
+                if (serialport.IsOpen)
+                    serialport.Close();
+
+                serialport.Dispose();
+                 
+	        }
 
         }
 

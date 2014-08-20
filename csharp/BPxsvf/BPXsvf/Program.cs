@@ -27,11 +27,13 @@ namespace BPXsvf
             //SerialPort ser = new SerialPort();
 
             AbstractBpXsvf iXsvf = new BpXsvfFork();
-            iXsvf.SetBpXsvfParameterData(bpParamData);
+            //iXsvf.SetBpXsvfParameterData(bpParamData);
             //iXsvf.SetSerialPort(ser);
             iXsvf.SetOutDisplay(this);
             iXsvf.Greet();
+            iXsvf.DoProcess(bpParamData);
 
+            
 
             Console.ReadKey();
         }
