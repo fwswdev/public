@@ -190,7 +190,9 @@ namespace BPXsvf
                 {
                     try
                     {
-                        res = serialport.Read(readbuffer, 0, BUFF_SZ);
+                        //res = serialport.Read(readbuffer, 0, BUFF_SZ);
+                        res = 0;
+                        res = serialport.Read(readbuffer, 0, 1);
                     }
                     catch(TimeoutException e)
                     {
@@ -203,6 +205,7 @@ namespace BPXsvf
                         if(readbuffer[0]!=AbstractBpXsvf.XSVF_READY_FOR_DATA)
                         {
                             ioutdisp.Display("Error! Code: " + (int)readbuffer[0]);
+                            return;
                         }
                         else
                         {
@@ -217,19 +220,25 @@ namespace BPXsvf
                             byte[] tempSend = new byte[2];
                             tempSend[0] = (byte)(readSize >> 8);
                             tempSend[1] = (byte)(readSize);
+
+                            //tempSend[0] = (byte)(readSize); 
+
+
+
                             cnt += readSize;
                             //ioutdisp.Display(String.Format("Sending {0:d} Bytes {1:x04}", readSize, cnt));
                             ioutdisp.Display(String.Format("Sending {0:d} Bytes {1:d}", readSize, cnt));
 
                             Thread.Sleep(5);
                             serialport.DiscardInBuffer();
+                            //tempSend[0] = (byte)(readSize);
                             serialport.Write(tempSend, 0, 2);
                             serialport.Write(byteRead, bytePointer, readSize);
 
                             bytePointer += readSize;
                             fileSize -= readSize;
 
-                            //Thread.Sleep(2000);
+                            Thread.Sleep(50);
 
                         }
 
