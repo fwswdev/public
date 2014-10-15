@@ -192,7 +192,8 @@ namespace BPXsvf
                     {
                         //res = serialport.Read(readbuffer, 0, BUFF_SZ);
                         res = 0;
-                        res = serialport.Read(readbuffer, 0, 1);
+                        //res = serialport.Read(readbuffer, 0, 1);
+                        res = serialport.Read(readbuffer, 0, BUFF_SZ);
                     }
                     catch(TimeoutException e)
                     {

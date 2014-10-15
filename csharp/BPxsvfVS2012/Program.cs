@@ -23,7 +23,7 @@ namespace BPXsvf
             bpParamData.ComName = "COM4";
             bpParamData.ResetJtag = true;
             //bpParamData.XsvfFilePath = @"C:\Temp\bpxsvf\a.xsvf";
-            bpParamData.XsvfFilePath = @"C:\Temp\asd\asdd\default.xsvf";
+            bpParamData.XsvfFilePath = @"C:\Temp\iselight\lightled\default.xsvf";
             //bpParamData.XsvfFilePath = @"C:\Temp\asd\asdd\a.xsvf";
             
 
