@@ -89,12 +89,12 @@ namespace Naming_Conventions
 
         // PROTECTED METHODS
         // I usually add prot at the beginning of the method name
-        private void protGetName() { }
+        protected void protGetName() { }
 
         // PROTECTED VARIABLES
         // I usually add p or prot ath the beginning of the variable name
-        private bool pHasKey; // coming from C/C++, this looks like pertaining to a pointer
-        private bool protHasKey;
+        protected bool pHasKey; // coming from C/C++, this looks like pertaining to a pointer
+        protected bool protHasKey;
 
 
         // PUBLIC METHODS
