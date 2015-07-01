@@ -2,4 +2,4 @@ public
 ======
 
 Public Repository.
-This is still in progress...
+Collection of Projects and Sample Programs.
